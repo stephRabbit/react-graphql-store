@@ -1,0 +1,17 @@
+# type User {
+#   id: ID!
+#   email: String!
+#   name: String!
+# }
+
+type Dogs {
+  name: String!
+}
+
+type Mutation {
+  createDog(name: String!): Dogs
+}
+
+type Query {
+  dogs: [Dogs!]!
+}
