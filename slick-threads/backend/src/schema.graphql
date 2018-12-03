@@ -1,17 +1,21 @@
+# import * from './generated/prisma.graphql'
+
 # type User {
 #   id: ID!
 #   email: String!
 #   name: String!
 # }
 
-type Dogs {
-  name: String!
-}
-
 type Mutation {
-  createDog(name: String!): Dogs
+  createItem(
+    title: String,
+    description: String,
+    image: String,
+    largeImage: String,
+    price: Int
+  ) : Item!
 }
 
 type Query {
-  dogs: [Dogs!]!
+  items: [Item]!
 }
