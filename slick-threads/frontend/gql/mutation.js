@@ -19,3 +19,32 @@ export const CREATE_ITEM_MUTATION = gql`
     }
   }
 `
+
+export const UPDATE_ITEM_MUTATION = gql`
+  mutation UPDATE_ITEM_MUTATION(
+    $description: String
+    $id: ID!
+    $price: Int
+    $title: String
+  ) {
+    updateItem(
+      description: $description
+      id: $id
+      price: $price
+      title: $title
+    ) {
+      id
+      description
+      price
+      title
+    }
+  }
+`
+
+export const DELETE_ITEM_MUTATION = gql`
+  mutation DELETE_ITEM_MUTATION($id: ID!) {
+    deleteItem(id: $id) {
+      id
+    }
+  }
+`

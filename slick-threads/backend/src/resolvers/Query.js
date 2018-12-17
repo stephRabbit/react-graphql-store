@@ -13,6 +13,13 @@ const Query = {
   //   const items = await ctx.db.query.items()
   //   return items
   // }
+
+  item: forwardTo('db'),
+
+  // async item(parent, args, ctx, info) {
+  //   const item = await ctx.db.query.item(args, info)
+  //   return item
+  // }
 }
 
 module.exports = Query
