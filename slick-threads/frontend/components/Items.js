@@ -5,6 +5,8 @@ import styled from 'styled-components'
 import { ALL_ITEMS_QUERY } from '../gql/query'
 
 import Item from './Item'
+import Pagination from './Pagination'
+import { perPage } from '../config';
 
 const Center = styled.div`
   text-align: center;
@@ -20,9 +22,16 @@ const ItemsList = styled.div`
 
 export default class Items extends Component {
   render() {
+    const { page } = this.props
     return (
       <Center>
-        <Query query={ALL_ITEMS_QUERY}>
+        <Pagination page={page} />
+        <Query
+          query={ALL_ITEMS_QUERY}
+          variables={{
+            skip: page * perPage - perPage, // 1 skip 4 - 4
+          }}
+        >
           {({ data, error, loading, }) => {
             if (error) return <p>error</p>
             if (loading || !data) return <p>Loading...</p>
@@ -36,6 +45,7 @@ export default class Items extends Component {
             )
           }}
         </Query>
+        <Pagination page={page} />
       </Center>
     )
   }

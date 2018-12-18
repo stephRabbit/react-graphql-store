@@ -20,6 +20,8 @@ const Query = {
   //   const item = await ctx.db.query.item(args, info)
   //   return item
   // }
+
+  itemsConnection: forwardTo('db'),
 }
 
 module.exports = Query
