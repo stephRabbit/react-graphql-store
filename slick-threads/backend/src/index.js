@@ -1,12 +1,15 @@
+const cookieParser = require('cookie-parser')
 require('dotenv').config({ path: '.env' })
 const createServer = require('./createServer')
 const db = require('./db')
 
 const server = createServer()
 
-// TODO ::
-// handle cookies (JWT) and populate user
-// with Express middleware
+// Use Express middleware to handle cookies with JWT
+// instead of LocalStorage to avoid glitch when passing JWT for SSR
+server.express.use(cookieParser())
+
+// TODO :: Use Express middleware populate user
 
 server.start({
   cors: {
