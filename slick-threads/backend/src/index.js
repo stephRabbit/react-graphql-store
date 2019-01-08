@@ -2,6 +2,7 @@ const cookieParser = require('cookie-parser')
 require('dotenv').config({ path: '.env' })
 const createServer = require('./createServer')
 const db = require('./db')
+const jwt = require('jsonwebtoken')
 
 const server = createServer()
 
@@ -9,7 +10,17 @@ const server = createServer()
 // instead of LocalStorage to avoid glitch when passing JWT for SSR
 server.express.use(cookieParser())
 
-// TODO :: Use Express middleware populate user
+// Decode JWT to get user Id on every request
+server.express.use((req, res, next) => {
+  const { token } = req.cookies
+
+  if (token) {
+    const { userId } = jwt.verify(token, process.env.APP_SECRET)
+    // Add userId to request
+    req.userId = userId
+  }
+  next()
+})
 
 server.start({
   cors: {
