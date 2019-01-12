@@ -56,31 +56,28 @@ const Mutations = {
   async signup(parent, args, ctx, info) {
     args.email = args.email.toLowerCase()
 
-    // Hash password
+    // Hash their password and Create the user in the database
     const password = await bcrypt.hash(args.password, 10)
-
-    // Create user in DB
-    const user = await ctx.db.mutation.createUser({
+    const user = await ctx.db.mutation.createUser(
+      {
         data: {
           ...args,
           password,
           permissions: { set: ['USER'] },
-        }
+        },
       },
       info
     )
 
-    // Create JWT for user
+    // Create the JWT token for them and Set jwt as a cookie on the response
     const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
-
-    // Set JWT as a cookie on the response
     ctx.response.cookie('token', token, {
-      httpOnly: true, // Don't allow access to cookie in javascript
-      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 yeat expiry
+      httpOnly: true, // Don't allow cookies in js
+      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
     })
 
     return user
-  }
+  },
 }
 
 module.exports = Mutations

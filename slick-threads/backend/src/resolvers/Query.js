@@ -22,6 +22,19 @@ const Query = {
   // }
 
   itemsConnection: forwardTo('db'),
+
+  me(parent, args, ctx, info) {
+    // Check if current user ID
+    if (!ctx.request.userId) {
+      return null
+    }
+
+    return ctx.db.query.user({
+        where: { id: ctx.request.userId },
+      },
+      info
+    )
+  }
 }
 
 module.exports = Query

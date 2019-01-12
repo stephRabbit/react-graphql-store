@@ -16,6 +16,7 @@ server.express.use((req, res, next) => {
 
   if (token) {
     const { userId } = jwt.verify(token, process.env.APP_SECRET)
+
     // Add userId to request
     req.userId = userId
   }

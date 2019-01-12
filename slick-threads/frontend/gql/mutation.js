@@ -56,9 +56,9 @@ export const SIGNUP_MUTATION = gql`
       name: $name,
       password: $password
     ) {
-      name
+      id
       email
-      password
+      name
     }
   }
 `
