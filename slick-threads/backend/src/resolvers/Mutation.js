@@ -69,15 +69,54 @@ const Mutations = {
       info
     )
 
-    // Create the JWT token for them and Set jwt as a cookie on the response
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
-    ctx.response.cookie('token', token, {
-      httpOnly: true, // Don't allow cookies in js
-      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
-    })
+    // Generate JWT and set cookie with token
+    setTokenToCookie(user, ctx)
 
     return user
   },
+
+  async signin(parent, { email, password }, ctx, info) {
+    // Check for user with email
+    const user = await ctx.db.query.user({
+      where: { email },
+    })
+    if (!user) {
+      throw new Error(`No user found for provided email: ${email}`)
+    }
+
+    // Validate that password provided with user password
+    const validPassword = await bcrypt.compare(password, user.password)
+    if (!validPassword) {
+      throw new Error('Invalid password!')
+    }
+
+    // Generate JWT and set cookie with token
+    setTokenToCookie(user, ctx)
+
+    return user
+  },
+
+  signout(parent, { email, password }, ctx, info) {
+    ctx.response.clearCookie('token')
+    return {
+      message: 'Thanks, see you soon!'
+    }
+  },
+}
+
+/**
+ * setTokenToCookie
+ * @param {object} user - current user
+ * @param {*} ctx - context
+ *
+ * generate JWT and set in a cookie
+ */
+const setTokenToCookie = (user, ctx) => {
+  const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
+  ctx.response.cookie('token', token, {
+    httpOnly: true, // Don't allow cookies in js
+    maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
+  })
 }
 
 module.exports = Mutations
