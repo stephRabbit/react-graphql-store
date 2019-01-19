@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const { randomBytes } = require('crypto')
+const { promisify } = require('util')
 
 const Mutations = {
   // createDog(parent, args, ctx, info) {
@@ -96,12 +98,73 @@ const Mutations = {
     return user
   },
 
-  signout(parent, { email, password }, ctx, info) {
+  signout(parent, args, ctx, info) {
     ctx.response.clearCookie('token')
     return {
       message: 'Thanks, see you soon!'
     }
   },
+
+  async requestReset(parent, { email }, ctx, info) {
+    // Check if user exists
+    const user = await ctx.db.query.user({
+      where: { email },
+    })
+    if (!user) {
+      throw new Error(`No user found for provided email: ${email}`)
+    }
+
+    // Set reset token and expiry on requesting user
+    const randomBytesPromiseified = promisify(randomBytes)
+    const resetToken = (await randomBytesPromiseified(20)).toString('hex')
+    const resetTokenExpiry = Date.now() + 3600000
+    const res = await ctx.db.mutation.updateUser({
+      where: { email },
+      data: {
+        resetToken,
+        resetTokenExpiry,
+      }
+    })
+
+    return { message: 'Thanks!' }
+
+    // Email reset token
+  },
+
+  async resetPassword(parent, { resetToken, password, confirmPassword }, ctx, info) {
+    // Check password match
+    if (password !== confirmPassword) {
+      throw new Error('Your password does not match')
+    }
+    // Check if token is valid and is expired
+    const [user] = await ctx.db.query.users({
+      where: {
+        resetToken,
+        resetTokenExpiry_gte: Date.now() - 3600000
+      }
+    })
+    if (!user) {
+      throw new Error('This token is invalid or expired!')
+    }
+
+    // Hash new password
+    const passwordUpdate = await bcrypt.hash(password, 10)
+
+    // Save new password to user and remove old resetToken fileds
+    const updatedUser = await ctx.db.mutation.updateUser({
+      where: { email: user.email },
+      data: {
+        password: passwordUpdate,
+        resetToken: null,
+        resetTokenExpiry: null,
+      }
+    })
+
+    // Generate JWT and set cookie with token
+    setTokenToCookie(updatedUser, ctx)
+
+    return updatedUser
+  }
 }
 
 /**
